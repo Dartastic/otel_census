@@ -1,15 +1,16 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_census_suppression.dart';
 
 const _tracerName = 'dartastic_otel_libs_census';
 
-Tracer _tracer() => OTel.tracerProvider().getTracer(_tracerName);
+APITracer _tracer() => OTelAPI.tracerProvider().getTracer(_tracerName);
 
 class CensusResult {
+  /// Creates a result.
   const CensusResult({
     this.workspaceId,
     this.sourceConnection,
@@ -81,8 +82,13 @@ class CensusResult {
   final int? statusCode;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class CensusCallResult<T> {
+  /// Creates a call result.
   const CensusCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final CensusResult? result;
 }
@@ -109,68 +115,68 @@ Future<T> tracedCensus<T>({
   final span = _tracer().startSpan(
     'census $operation',
     kind: SpanKind.client,
-    attributes: OTel.attributesFromMap(m),
+    attributes: OTelAPI.attributesFromMap(m),
   );
   try {
     final r = await invoke();
     if (r.result != null) {
       final extras = <Attribute<Object>>[];
       if (r.result!.workspaceId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'census.workspace.id',
           r.result!.workspaceId!,
         ));
       }
       if (r.result!.sourceConnection != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'census.source.connection',
           r.result!.sourceConnection!,
         ));
       }
       if (r.result!.modelId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'census.model.id',
           r.result!.modelId!,
         ));
       }
       if (r.result!.segmentId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'census.segment.id',
           r.result!.segmentId!,
         ));
       }
       if (r.result!.syncId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'census.sync.id',
           r.result!.syncId!,
         ));
       }
       if (r.result!.destinationConnection != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'census.destination.connection',
           r.result!.destinationConnection!,
         ));
       }
       if (r.result!.objectName != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'census.destination.object',
           r.result!.objectName!,
         ));
       }
       if (r.result!.syncRunId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'census.sync_run.id',
           r.result!.syncRunId!,
         ));
       }
       if (r.result!.behavior != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'census.behavior',
           r.result!.behavior!,
         ));
       }
       if (r.result!.runStatus != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'census.run.status',
           r.result!.runStatus!,
         ));
@@ -179,37 +185,37 @@ Future<T> tracedCensus<T>({
         }
       }
       if (r.result!.recordsProcessed != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'census.records.processed',
           r.result!.recordsProcessed!,
         ));
       }
       if (r.result!.recordsUpdated != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'census.records.updated',
           r.result!.recordsUpdated!,
         ));
       }
       if (r.result!.recordsInvalid != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'census.records.invalid',
           r.result!.recordsInvalid!,
         ));
       }
       if (r.result!.recordsFailed != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'census.records.failed',
           r.result!.recordsFailed!,
         ));
       }
       if (r.result!.scheduleType != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'census.schedule.type',
           r.result!.scheduleType!,
         ));
       }
       if (r.result!.statusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'http.response.status_code',
           r.result!.statusCode!,
         ));
@@ -220,13 +226,13 @@ Future<T> tracedCensus<T>({
           );
         }
       }
-      if (extras.isNotEmpty) span.addAttributes(OTel.attributes(extras));
+      if (extras.isNotEmpty) span.addAttributes(OTelAPI.attributes(extras));
     }
     return r.value;
   } catch (e, st) {
-    span.addAttributes(OTel.attributes([
-      OTel.attributeString(
-        ErrorResource.errorType.key,
+    span.addAttributes(OTelAPI.attributes([
+      OTelAPI.attributeString(
+        ErrorAttributes.errorType.key,
         e.runtimeType.toString(),
       ),
     ]));
